@@ -1,0 +1,8 @@
+- Game and Watch inspired
+- One screen only
+- Game about a bunny who tries to protect their carrots from being consumed by overgrown plants
+- Plants gradually grow
+- Lose a life if a plant grows too much
+- Has a "house" and "carrot field"
+- Cut plant gradually with scissors
+- Scissors break with use, must get new ones at house
