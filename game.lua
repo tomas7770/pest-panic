@@ -47,6 +47,17 @@ function BOOT()
 		3,
 		3,
 	}
+	plrDropAnim = {
+		-- Sum must be 24
+		-3,
+		-2,
+		-1,
+
+		3,
+		6,
+		9,
+		12,
+	}
 	plr = {
 		x = 0,
 		y = 0,
@@ -116,6 +127,13 @@ function TIC()
 				plr.moveAnimTimer = plr.moveAnimTimerMax
 				plr.climbAnimIndex = 1
 			end
+		elseif plr.gx > 4 and plr.gx < 8 and btn(1) and plr.gy < 4 then
+			-- Drop down
+			plr.gy = plr.gy+1
+
+			plr.climbDir = 0
+			plr.moveAnimTimer = plr.moveAnimTimerMax
+			plr.climbAnimIndex = 1
 		end
 	end
 	if plr.moveAnimIndex ~= 0 then
@@ -133,8 +151,15 @@ function TIC()
 	elseif plr.climbAnimIndex ~= 0 then
 		plr.moveAnimTimer = plr.moveAnimTimer-DT*gameSpeed
 		while plr.moveAnimTimer < 0 do
-			plr.y = plr.y+plrClimbAnim[plr.climbAnimIndex]*plr.climbDir
-			if plr.climbAnimIndex == #plrClimbAnim then
+			local animTable
+			if plr.climbDir == 0 then
+				animTable = plrDropAnim
+				plr.y = plr.y+animTable[plr.climbAnimIndex]
+			else
+				animTable = plrClimbAnim
+				plr.y = plr.y+animTable[plr.climbAnimIndex]*plr.climbDir
+			end
+			if plr.climbAnimIndex == #animTable then
 				plr.climbAnimIndex = 0
 				break
 			end
