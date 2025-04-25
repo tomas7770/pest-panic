@@ -6,3 +6,4 @@
 - Has a "house" and "carrot field"
 - Cut plant gradually with scissors
 - Scissors break with use, must get new ones at house
+- 10 tiles horizontally (three 8-pixel tiles per game tile)
