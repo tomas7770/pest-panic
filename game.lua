@@ -37,15 +37,15 @@ function BOOT()
 	}
 	plrClimbAnim = {
 		-- Sum must be 24
-		3,
-		3,
-		3,
-		3,
+		4,
+		4,
+		4,
+		4,
 
-		3,
-		3,
-		3,
-		3,
+		4,
+		4,
+		0,
+		0,
 	}
 	plrDropAnim = {
 		-- Sum must be 24
