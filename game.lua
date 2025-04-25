@@ -8,6 +8,7 @@
 
 function BOOT()
 	DT = 1/60
+	t = 0
 	gameSpeed = 1
 	plrMoveAnim = {
 		x = {
@@ -75,6 +76,9 @@ function BOOT()
 		climbing = function(self)
 			return self.climbAnimIndex ~= 0
 		end,
+		busy = function(self)
+			return self:moving() or self:climbing()
+		end,
 		canMoveLeft = function(self)
 			if self.gy == 4 then
 				return self.gx > 1
@@ -87,6 +91,10 @@ function BOOT()
 		end,
 	}
 	plr.x, plr.y = addSprOffset(gameTilePos(plr.gx, plr.gy))
+	scissorX, scissorY = addSprOffset(gameTilePos(1, 4))
+	scissorUsesMax = 20
+	scissorUsesLow = 4
+	scissorUses = 0
 end
 
 function gameTilePos(x,y)
@@ -100,6 +108,7 @@ function addSprOffset(x,y)
 end
 
 function TIC()
+	t = t+1
 	if not plr:moving() and not plr:climbing() then
 		if btn(2) and plr:canMoveLeft() then
 			plr.gx = plr.gx-1
@@ -168,9 +177,20 @@ function TIC()
 		end
 	end
 
+	if plr.gx == 1 and scissorUses <= 0 and not plr:busy() then
+		scissorUses = scissorUsesMax
+	end
+
 	cls(0)
 	map(0,0,30,17,0,0)
+	if scissorUses <= 0 then
+		spr(259, scissorX, scissorY, 0, 1, 0, 0, 2, 2)
+	end
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
+
+	if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
+		spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
+	end
 end
 
 -- <TILES>
