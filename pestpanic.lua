@@ -1,5 +1,5 @@
--- title:   game title
--- author:  game developer, email, etc.
+-- title:   Pest Panic
+-- author:  tomas7777 (https://tomas7777.itch.io/) (https://github.com/tomas7770)
 -- desc:    short description
 -- site:    website link
 -- license: MIT License (change this to your license of choice)
