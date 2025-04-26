@@ -311,7 +311,11 @@ function TIC()
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
 	for _,wd in ipairs(weeds) do
 		if wd.state > 0 then
-			spr(weedSprs[wd.state], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
+			if wd.state == 4 then
+				spr(weedSprs[wd.state-(t//15)%2], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
+			else
+				spr(weedSprs[wd.state], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
+			end
 		end
 	end
 	if plr.cuttingWeed then
