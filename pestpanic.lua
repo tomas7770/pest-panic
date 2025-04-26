@@ -144,6 +144,7 @@ function initGame()
 	scissorUsesMax = 20
 	scissorUsesLow = 4
 	scissorUses = 0
+	weedTimerStatic = 10
 	weedTimerMax = 16
 	weeds = {
 		{
@@ -180,9 +181,12 @@ function initGame()
 	for _,wd in ipairs(weeds) do
 		wd.x, wd.y = gameTilePos(wd.gx, wd.gy)
 		wd.resetTimer = function()
+			wd.timer = weedTimerStatic
+		end
+		wd.resetTimerRandom = function()
 			wd.timer = weedTimerMax*randLimited()
 		end
-		wd.resetTimer()
+		wd.resetTimerRandom()
 	end
 	failAnimTimerMax = 3
 	failAnimTimer = 0
@@ -223,7 +227,7 @@ end
 function loseLife()
 	for _,wd in ipairs(weeds) do
 		wd.state = 0
-		wd.resetTimer()
+		wd.resetTimerRandom()
 	end
 	lives = lives-1
 	if lives <= 0 then
@@ -342,7 +346,7 @@ function normalGameUpdate()
 				score = score+1
 				updateGameSpeed()
 				plr.cuttingWeed.state = plr.cuttingWeed.state-1
-				plr.cuttingWeed.resetTimer()
+				plr.cuttingWeed.resetTimerRandom()
 				plr.cuttingWeed = nil
 				sfx(-1, nil, nil, 0)
 				if scissorUses == 0 then
