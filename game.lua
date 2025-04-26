@@ -70,14 +70,20 @@ function BOOT()
 		moveAnimIndex = 0,
 		climbDir = 1,
 		climbAnimIndex = 0,
+		cutTimer = 0,
+		cutTimerMax = 0.75,
+		cuttingWeed = nil,
 		moving = function(self)
 			return self.moveAnimIndex ~= 0
 		end,
 		climbing = function(self)
 			return self.climbAnimIndex ~= 0
 		end,
+		cutting = function(self)
+			return self.cutTimer > 0
+		end,
 		busy = function(self)
-			return self:moving() or self:climbing()
+			return self:moving() or self:climbing() or self:cutting()
 		end,
 		canMoveLeft = function(self)
 			if self.gy == 4 then
@@ -95,6 +101,49 @@ function BOOT()
 	scissorUsesMax = 20
 	scissorUsesLow = 4
 	scissorUses = 0
+	weedSprs = {
+		261, 264, 267, 309
+	}
+	weedTimerMax = 16
+	weeds = {
+		{
+			gx = 5,
+			gy = 2,
+			state = 0,
+		},
+		{
+			gx = 6,
+			gy = 2,
+			state = 0,
+		},
+		{
+			gx = 7,
+			gy = 2,
+			state = 0,
+		},
+		{
+			gx = 5,
+			gy = 3,
+			state = 0,
+		},
+		{
+			gx = 6,
+			gy = 3,
+			state = 0,
+		},
+		{
+			gx = 7,
+			gy = 3,
+			state = 0,
+		},
+	}
+	for _,wd in ipairs(weeds) do
+		wd.x, wd.y = gameTilePos(wd.gx, wd.gy)
+		wd.resetTimer = function()
+			wd.timer = weedTimerMax*randLimited()
+		end
+		wd.resetTimer()
+	end
 end
 
 function gameTilePos(x,y)
@@ -107,9 +156,14 @@ function addSprOffset(x,y)
 	return x+4, y+4
 end
 
+function randLimited()
+	-- 0.25 to 1.0
+	return 0.75*math.random()+0.25
+end
+
 function TIC()
 	t = t+1
-	if not plr:moving() and not plr:climbing() then
+	if not plr:busy() then
 		if btn(2) and plr:canMoveLeft() then
 			plr.gx = plr.gx-1
 	
@@ -181,12 +235,53 @@ function TIC()
 		scissorUses = scissorUsesMax
 	end
 
+	for _,wd in ipairs(weeds) do
+		if btn(4) and wd.state > 0 and plr.gx == wd.gx and plr.gy == wd.gy
+			and scissorUses > 0 and not plr:busy() then
+			
+			plr.cutTimer = plr.cutTimerMax
+			plr.cuttingWeed = wd
+		elseif plr.cuttingWeed ~= wd then
+			wd.timer = wd.timer-DT*gameSpeed
+			if wd.timer <= 0 then
+				wd.state = wd.state+1
+				if wd.state > 4 then
+					wd.state = 0 -- TODO LOSE LIFE AND RESET STATE OF ALL WEEDS
+				end
+				wd.resetTimer()
+			end
+		end
+	end
+
+	if plr.cutTimer > 0 then
+		if not btn(4) then
+			plr.cutTimer = 0
+			plr.cuttingWeed = nil
+		else
+			plr.cutTimer = plr.cutTimer-DT*gameSpeed
+			if plr.cutTimer <= 0 then
+				scissorUses = scissorUses-1
+				plr.cuttingWeed.state = plr.cuttingWeed.state-1
+				plr.cuttingWeed.resetTimer()
+				plr.cuttingWeed = nil
+			end
+		end
+	end
+
 	cls(0)
 	map(0,0,30,17,0,0)
 	if scissorUses <= 0 then
 		spr(259, scissorX, scissorY, 0, 1, 0, 0, 2, 2)
 	end
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
+	for _,wd in ipairs(weeds) do
+		if wd.state > 0 then
+			spr(weedSprs[wd.state], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
+		end
+	end
+	if plr.cuttingWeed then
+		spr(289+(t//8)%3, plr.cuttingWeed.x+8, plr.cuttingWeed.y-4, 0)
+	end
 
 	if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
 		spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
@@ -220,10 +315,27 @@ end
 -- 002:000cc00000ccc0000cccc0000ccc20000ccc2c00ccccccc0cccccccccccccccc
 -- 003:0dd0000d00d0000d00ddd00d0000dddd00000dcc000000cc00000dd00000dd00
 -- 004:d000000000000000000000000000000000000000dd000000ddd000000ddd0000
+-- 010:0000000000000000000000000000000000000000060000000660000006000000
+-- 012:0000000000000000000000000000070000000600000006000077600070067000
+-- 013:0000000000000000000000000000000000006000060077000660760006076000
 -- 017:cccccccc0ccccccc000ccccc000ccccc000ccccc000ccccc00cccc0000ccc000
 -- 018:cccc0000ccc00000ccc00000ccc00000cccc0000cccc0000ccccc000ccccc000
 -- 019:0000d0000000d000000eeee0000e00e0000e00e0000e0ee0000eee0000000000
 -- 020:000de000000eeee0000e00e0000e00e0000e00e00000ee000000000000000000
+-- 022:0000000000000000000000000007000070070077770707707777070000777700
+-- 025:0000077070007707700006076607660776060077760707707777070000777700
+-- 026:7700000070000000000000000000000000000000000000000000000000000000
+-- 027:0000007000000070000000070000000000000007000000000000000000000000
+-- 028:7006677077777707777006076607660776060077760707767777077700777777
+-- 029:7776000070000000000000000700000067000000700000007000000000000000
+-- 033:0000000000000000000000000500005000000000005050000000000000000000
+-- 034:0005000000000050050000000000000500500000000000000000000000000000
+-- 053:0000000000000000000000070070000700700077007070070070700700707000
+-- 054:0000000000700070007000700070077600700706000076067077600670067060
+-- 055:0000000000600000606070000060700000606700066077000660760006076000
+-- 069:0007077600077776000000760000007000000077000000700000000700000007
+-- 070:7006666077777707677006076607660776060077766707767766077677767776
+-- 071:7676000076600000066000000670000077000000760000006000000000000000
 -- </SPRITES>
 
 -- <MAP>
