@@ -8,10 +8,11 @@
 
 function BOOT()
 	DT = 1/60
+	TITLE_SCREEN = "TitleScreen"
 	IN_GAME = "InGame"
 	GAME_OVER = "GameOver"
 
-	gameState = IN_GAME
+	gameState = TITLE_SCREEN
 	t = 0
 	speedTable = {
 		-- Map score to gameSpeed
@@ -88,7 +89,12 @@ function BOOT()
 		9,
 		12,
 	}
-	initGame()
+	weedSprs = {
+		261, 264, 267, 309
+	}
+
+	menuSel = 0
+	showInstructions = false
 end
 
 function initGame()
@@ -137,9 +143,6 @@ function initGame()
 	scissorUsesMax = 20
 	scissorUsesLow = 4
 	scissorUses = 0
-	weedSprs = {
-		261, 264, 267, 309
-	}
 	weedTimerMax = 16
 	weeds = {
 		{
@@ -382,8 +385,26 @@ function TIC()
 		end
 	elseif gameState == GAME_OVER then
 		if btnp(4) then
-			gameState = IN_GAME
-			initGame()
+			gameState = TITLE_SCREEN
+		end
+	elseif gameState == TITLE_SCREEN then
+		if btnp(0) and menuSel > 0 and not showInstructions then
+			menuSel = menuSel-1
+		elseif btnp(1) and menuSel < 1 and not showInstructions then
+			menuSel = menuSel+1
+		elseif btnp(4) then
+			if showInstructions then
+				showInstructions = false
+			else
+				if menuSel == 0 then
+					gameState = IN_GAME
+					initGame()
+				elseif menuSel == 1 then
+					showInstructions = true
+				end
+			end
+		elseif btnp(5) and showInstructions then
+			showInstructions = false
 		end
 	end
 
@@ -392,15 +413,40 @@ function TIC()
 		inGameDraw()
 	elseif gameState == GAME_OVER then
 		print("Game over!", 60, 60, 12, false, 2)
+	elseif gameState == TITLE_SCREEN then
+		print("PEST PANIC", 65, 30, 12, false, 2)
+		rect(91, 66, 60, 14, menuSel == 0 and 2 or 1)
+		rect(86, 86, 75, 14, menuSel == 1 and 2 or 1)
+		print("Play game", 95, 70, 12)
+		print("Instructions", 90, 90, 12)
+		if showInstructions then
+			rect(30, 15, 180, 100, 1)
+			print("Bunny's carrots are\n"..
+				  "invaded by weeds!\n\n"..
+				  "Grab shears, walk to\n"..
+				  "the carrots, and hold A\n"..
+				  "to cut!\n\n"..
+				  "Don't let weeds grow\n"..
+				  "too much. If a carrot\n"..
+				  "rots, you lose a life!\n\n"..
+				  "The game gets\n"..
+				  "gradually faster.\n\n"..
+				  "Good luck!", 34, 19, 12)
+			spr(259, 180, 35, 0, 1, 0, 0, 2, 2)
+			spr(337, 180, 60, 0, 1, 0, 0, 2, 2)
+			spr(weedSprs[1+(t//60)%4], 180, 60, 0, 1, 0, 0, 3, 3)
+		end
 	end
 
 	-- HUD
-	if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
-		spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
+	if gameState == IN_GAME or gameState == GAME_OVER then
+		if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
+			spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
+		end
+		spr(305, 150, 4, 0, 1, 0, 0, 2, 2)
+		print(score, 4, 4, 12, false, 2)
+		print("x"..lives, 170, 4, 12, false, 2)
 	end
-	spr(305, 150, 4, 0, 1, 0, 0, 2, 2)
-	print(score, 4, 4, 12, false, 2)
-	print("x"..lives, 170, 4, 12, false, 2)
 end
 
 -- <TILES>
