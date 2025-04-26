@@ -8,10 +8,11 @@
 
 function BOOT()
 	DT = 1/60
+	IN_GAME = "InGame"
+	GAME_OVER = "GameOver"
+
+	gameState = IN_GAME
 	t = 0
-	gameSpeed = 1
-	score = 0
-	lives = 3
 	speedTable = {
 		-- Map score to gameSpeed
 		[25] = 1.1,
@@ -87,6 +88,13 @@ function BOOT()
 		9,
 		12,
 	}
+	initGame()
+end
+
+function initGame()
+	gameSpeed = 1
+	score = 0
+	lives = 3
 	plr = {
 		x = 0,
 		y = 0,
@@ -212,6 +220,9 @@ function loseLife()
 		wd.resetTimer()
 	end
 	lives = lives-1
+	if lives <= 0 then
+		gameState = GAME_OVER
+	end
 end
 
 function normalGameUpdate()
@@ -333,15 +344,7 @@ function failGameUpdate()
 	end
 end
 
-function TIC()
-	t = t+1
-	if failAnimTimer <= 0 then
-		normalGameUpdate()
-	else
-		failGameUpdate()
-	end
-
-	cls(0)
+function inGameDraw()
 	map(0,0,30,17,0,0)
 	if scissorUses <= 0 then
 		spr(259, scissorX, scissorY, 0, 1, 0, 0, 2, 2)
@@ -349,7 +352,7 @@ function TIC()
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
 	for _,wd in ipairs(weeds) do
 		if wd.state > 0 then
-			if wd.state == 4 and failAnimTimer == 0 then
+			if wd.state == 4 and failAnimTimer <= 0 then
 				spr(weedSprs[wd.state-(t//15)%2], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
 			else
 				spr(weedSprs[wd.state], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
@@ -366,6 +369,29 @@ function TIC()
 		spr(337, failWeed.x, lerp(failWeed.y, 4*24, 2-failAnimTimer), 0, 1, 0, 0, 2, 2)
 	elseif failAnimTimer > 0 and failAnimTimer <= 1 then
 		spr(339, failWeed.x, 4*24, 0, 1, 0, 0, 2, 2)
+	end
+end
+
+function TIC()
+	t = t+1
+	if gameState == IN_GAME then
+		if failAnimTimer <= 0 then
+			normalGameUpdate()
+		else
+			failGameUpdate()
+		end
+	elseif gameState == GAME_OVER then
+		if btnp(4) then
+			gameState = IN_GAME
+			initGame()
+		end
+	end
+
+	cls(0)
+	if gameState == IN_GAME then
+		inGameDraw()
+	elseif gameState == GAME_OVER then
+		print("Game over!", 60, 60, 12, false, 2)
 	end
 
 	-- HUD
