@@ -187,6 +187,7 @@ function initGame()
 	failAnimTimerMax = 3
 	failAnimTimer = 0
 	failWeed = nil
+	failSoundState = 0
 end
 
 function gameTilePos(x,y)
@@ -216,6 +217,7 @@ end
 
 function doFail()
 	failAnimTimer = failAnimTimerMax
+	sfx(-1, nil, nil, 0)
 end
 
 function loseLife()
@@ -303,6 +305,7 @@ function normalGameUpdate()
 
 	if plr.gx == 1 and scissorUses <= 0 and not plr:busy() then
 		scissorUses = scissorUsesMax
+		sfx(0, "G-4", 20, 0)
 	end
 
 	for _,wd in ipairs(weeds) do
@@ -311,6 +314,7 @@ function normalGameUpdate()
 			
 			plr.cutTimer = plr.cutTimerMax
 			plr.cuttingWeed = wd
+			sfx(1, "C-7", -1, 0)
 		elseif plr.cuttingWeed ~= wd then
 			wd.timer = wd.timer-DT*gameSpeed
 			if wd.timer <= 0 then
@@ -330,6 +334,7 @@ function normalGameUpdate()
 		if not btn(4) then
 			plr.cutTimer = 0
 			plr.cuttingWeed = nil
+			sfx(-1, nil, nil, 0)
 		else
 			plr.cutTimer = plr.cutTimer-DT*gameSpeed
 			if plr.cutTimer <= 0 then
@@ -339,6 +344,12 @@ function normalGameUpdate()
 				plr.cuttingWeed.state = plr.cuttingWeed.state-1
 				plr.cuttingWeed.resetTimer()
 				plr.cuttingWeed = nil
+				sfx(-1, nil, nil, 0)
+				if scissorUses == 0 then
+					sfx(2, "D-4", 30, 1)
+				else
+					sfx(1, "A-4", 15, 1)
+				end
 			end
 		end
 	end
@@ -346,7 +357,14 @@ end
 
 function failGameUpdate()
 	failAnimTimer = failAnimTimer-DT
-	if failAnimTimer <= 0 then
+	if failAnimTimer > 1 and failAnimTimer <= 2 and failSoundState == 0 then
+		failSoundState = 1
+		sfx(3, "D-6", 30, 0)
+	elseif failAnimTimer > 0 and failAnimTimer <= 1  and failSoundState == 1 then
+		failSoundState = 2
+		sfx(2, "D-4", 30, 1)
+	elseif failAnimTimer <= 0 then
+		failSoundState = 0
 		loseLife()
 	end
 end
@@ -542,7 +560,10 @@ end
 -- </WAVES>
 
 -- <SFX>
--- 000:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000304000000000
+-- 000:000c000c000c000c000c000c000c000c000c000c0003000300030003000300030003000300031006100630064006600680069006b006c006d006f006b17000000000
+-- 001:0300030013001300230043005300630073009300a300b300d300e300f300f300030003000300030003000300030003000300030003000300030003006000000f0000
+-- 002:03000300030003006300630063007300730073007300730063002300230063008300830093009300930093009300a300a300b300b300c300c300f300302000000000
+-- 003:0000000000000000000000000000000000000000000000000000000f000f000e000e000e000d000d000d000c000c000c000b000b100b300a9009f008d02000000000
 -- </SFX>
 
 -- <TRACKS>
