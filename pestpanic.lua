@@ -16,30 +16,30 @@ function BOOT()
 	gameState = TITLE_SCREEN
 	t = 0
 	speedTable = {
-		-- Map score to gameSpeed
-		[25] = 1.1,
-		[50] = 1.2,
-		[75] = 1.3,
-		[100] = 1,
-		[115] = 1.1,
-		[135] = 1.2,
-		[160] = 1.3,
-		[185] = 1.35,
-		[200] = 1.1,
-		[215] = 1.2,
-		[235] = 1.3,
-		[260] = 1.4,
-		[285] = 1.5,
-		[300] = 1.15,
-		[310] = 1.2,
-		[330] = 1.3,
-		[350] = 1.45,
-		[375] = 1.6,
-		[400] = 1.2,
-		[410] = 1.3,
-		[430] = 1.4,
-		[450] = 1.55,
-		[475] = 1.7,
+		-- Map score to gameSpeed and weedSpeed
+		[25] = {1.1, 1.2},
+		[50] = {1.2, 1.35},
+		[75] = {1.3, 1.5},
+		[100] = {1.0, 1.1},
+		[115] = {1.1, 1.25},
+		[135] = {1.2, 1.4},
+		[160] = {1.3, 1.6},
+		[185] = {1.35, 1.6},
+		[200] = {1.1, 1.3},
+		[215] = {1.2, 1.45},
+		[235] = {1.3, 1.6},
+		[260] = {1.4, 1.7},
+		[285] = {1.5, 1.7},
+		[300] = {1.15, 1.4},
+		[310] = {1.2, 1.5},
+		[330] = {1.3, 1.65},
+		[350] = {1.45, 1.75},
+		[375] = {1.6, 1.8},
+		[400] = {1.2, 1.5},
+		[410] = {1.3, 1.65},
+		[430] = {1.4, 1.75},
+		[450] = {1.55, 1.9},
+		[475] = {1.7, 2.0},
 	}
 	plrMoveAnim = {
 		x = {
@@ -100,6 +100,7 @@ end
 
 function initGame()
 	gameSpeed = 1
+	weedSpeed = 1
 	score = 0
 	lives = 3
 	plr = {
@@ -141,11 +142,11 @@ function initGame()
 	}
 	plr.x, plr.y = addSprOffset(gameTilePos(plr.gx, plr.gy))
 	scissorX, scissorY = addSprOffset(gameTilePos(1, 4))
-	scissorUsesMax = 20
+	scissorUsesMax = 16
 	scissorUsesLow = 4
 	scissorUses = 0
-	weedTimerStatic = 10
-	weedTimerMax = 16
+	weedTimerStatic = 8
+	weedTimerMax = 12
 	weeds = {
 		{
 			gx = 5,
@@ -181,10 +182,10 @@ function initGame()
 	for _,wd in ipairs(weeds) do
 		wd.x, wd.y = gameTilePos(wd.gx, wd.gy)
 		wd.resetTimer = function()
-			wd.timer = weedTimerStatic
+			wd.timer = weedTimerStatic/weedSpeed
 		end
 		wd.resetTimerRandom = function()
-			wd.timer = weedTimerMax*randLimited()
+			wd.timer = weedTimerMax*randLimited()/weedSpeed
 		end
 		wd.resetTimerRandom()
 	end
@@ -205,8 +206,8 @@ function addSprOffset(x,y)
 end
 
 function randLimited()
-	-- 0.25 to 1.0
-	return 0.75*math.random()+0.25
+	-- 0.5 to 1.0
+	return 0.5*math.random()+0.5
 end
 
 function lerp(a, b, t)
@@ -215,7 +216,8 @@ end
 
 function updateGameSpeed()
 	if speedTable[score] then
-		gameSpeed = speedTable[score]
+		gameSpeed = speedTable[score][1]
+		weedSpeed = speedTable[score][2]
 	end
 end
 
