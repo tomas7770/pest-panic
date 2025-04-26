@@ -11,6 +11,7 @@ function BOOT()
 	t = 0
 	gameSpeed = 1
 	score = 0
+	lives = 3
 	speedTable = {
 		-- Map score to gameSpeed
 		[25] = 1.1,
@@ -171,6 +172,9 @@ function BOOT()
 		end
 		wd.resetTimer()
 	end
+	failAnimTimerMax = 3
+	failAnimTimer = 0
+	failWeed = nil
 end
 
 function gameTilePos(x,y)
@@ -188,14 +192,29 @@ function randLimited()
 	return 0.75*math.random()+0.25
 end
 
+function lerp(a, b, t)
+	return a*(1-t) + b*t
+end
+
 function updateGameSpeed()
 	if speedTable[score] then
 		gameSpeed = speedTable[score]
 	end
 end
 
-function TIC()
-	t = t+1
+function doFail()
+	failAnimTimer = failAnimTimerMax
+end
+
+function loseLife()
+	for _,wd in ipairs(weeds) do
+		wd.state = 0
+		wd.resetTimer()
+	end
+	lives = lives-1
+end
+
+function normalGameUpdate()
 	if not plr:busy() then
 		if btn(2) and plr:canMoveLeft() then
 			plr.gx = plr.gx-1
@@ -279,7 +298,10 @@ function TIC()
 			if wd.timer <= 0 then
 				wd.state = wd.state+1
 				if wd.state > 4 then
-					wd.state = 0 -- TODO LOSE LIFE AND RESET STATE OF ALL WEEDS
+					wd.state = 4
+					failWeed = wd
+					doFail()
+					break
 				end
 				wd.resetTimer()
 			end
@@ -302,6 +324,22 @@ function TIC()
 			end
 		end
 	end
+end
+
+function failGameUpdate()
+	failAnimTimer = failAnimTimer-DT
+	if failAnimTimer <= 0 then
+		loseLife()
+	end
+end
+
+function TIC()
+	t = t+1
+	if failAnimTimer <= 0 then
+		normalGameUpdate()
+	else
+		failGameUpdate()
+	end
 
 	cls(0)
 	map(0,0,30,17,0,0)
@@ -311,7 +349,7 @@ function TIC()
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
 	for _,wd in ipairs(weeds) do
 		if wd.state > 0 then
-			if wd.state == 4 then
+			if wd.state == 4 and failAnimTimer == 0 then
 				spr(weedSprs[wd.state-(t//15)%2], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
 			else
 				spr(weedSprs[wd.state], wd.x, wd.y, 0, 1, 0, 0, 3, 3)
@@ -322,10 +360,21 @@ function TIC()
 		spr(289+(t//(8/gameSpeed))%3, plr.cuttingWeed.x+8, plr.cuttingWeed.y-4, 0)
 	end
 
+	if failAnimTimer > 2 and (t//3)%2 > 0 then
+		spr(337, failWeed.x, failWeed.y, 0, 1, 0, 0, 2, 2)
+	elseif failAnimTimer > 1 and failAnimTimer <= 2 then
+		spr(337, failWeed.x, lerp(failWeed.y, 4*24, 2-failAnimTimer), 0, 1, 0, 0, 2, 2)
+	elseif failAnimTimer > 0 and failAnimTimer <= 1 then
+		spr(339, failWeed.x, 4*24, 0, 1, 0, 0, 2, 2)
+	end
+
+	-- HUD
 	if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
 		spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
 	end
+	spr(305, 150, 4, 0, 1, 0, 0, 2, 2)
 	print(score, 4, 4, 12, false, 2)
+	print("x"..lives, 170, 4, 12, false, 2)
 end
 
 -- <TILES>
@@ -370,12 +419,21 @@ end
 -- 029:7776000070000000000000000700000067000000700000007000000000000000
 -- 033:0000000000000000000000000500005000000000005050000000000000000000
 -- 034:0005000000000050050000000000000500500000000000000000000000000000
+-- 049:0000220002222220022222222222222222222222222222220222222202222222
+-- 050:0002200000222222022222220222222222222222222222222222222222222222
+-- 051:0000000000000000000000002000000020000000200000000000000000000000
 -- 053:0000000000000000000000070070000700700077007070070070700700707000
 -- 054:0000000000700070007000700070077600700706000076067077600670067060
 -- 055:0000000000600000606070000060700000606700066077000660760006076000
+-- 065:0222222200222222000222220000222200000222000000220000002200000002
+-- 066:2222222222222220222222002222200022220000222000002220000022000000
 -- 069:0007077600077776000000760000007000000077000000700000000700000007
 -- 070:7006666077777707677006076607660776060077766707767766077677767776
 -- 071:7676000076600000066000000670000077000000760000006000000000000000
+-- 082:0000000000000000000000000000000000550000055550003333330033333300
+-- 098:0333300003333000033330000033300000333000003300000033000000330000
+-- 099:0000000000000000000000000000000000000000000000010000001300000111
+-- 100:0000000000000000000000000001000000335000333553003335113011331530
 -- </SPRITES>
 
 -- <MAP>
