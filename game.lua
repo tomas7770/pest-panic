@@ -10,6 +10,33 @@ function BOOT()
 	DT = 1/60
 	t = 0
 	gameSpeed = 1
+	score = 0
+	speedTable = {
+		-- Map score to gameSpeed
+		[25] = 1.1,
+		[50] = 1.2,
+		[75] = 1.3,
+		[100] = 1,
+		[115] = 1.1,
+		[135] = 1.2,
+		[160] = 1.3,
+		[185] = 1.35,
+		[200] = 1.1,
+		[215] = 1.2,
+		[235] = 1.3,
+		[260] = 1.4,
+		[285] = 1.5,
+		[300] = 1.15,
+		[310] = 1.2,
+		[330] = 1.3,
+		[350] = 1.45,
+		[375] = 1.6,
+		[400] = 1.2,
+		[410] = 1.3,
+		[430] = 1.4,
+		[450] = 1.55,
+		[475] = 1.7,
+	}
 	plrMoveAnim = {
 		x = {
 			-- Sum must be 24
@@ -161,6 +188,12 @@ function randLimited()
 	return 0.75*math.random()+0.25
 end
 
+function updateGameSpeed()
+	if speedTable[score] then
+		gameSpeed = speedTable[score]
+	end
+end
+
 function TIC()
 	t = t+1
 	if not plr:busy() then
@@ -261,6 +294,8 @@ function TIC()
 			plr.cutTimer = plr.cutTimer-DT*gameSpeed
 			if plr.cutTimer <= 0 then
 				scissorUses = scissorUses-1
+				score = score+1
+				updateGameSpeed()
 				plr.cuttingWeed.state = plr.cuttingWeed.state-1
 				plr.cuttingWeed.resetTimer()
 				plr.cuttingWeed = nil
@@ -280,12 +315,13 @@ function TIC()
 		end
 	end
 	if plr.cuttingWeed then
-		spr(289+(t//8)%3, plr.cuttingWeed.x+8, plr.cuttingWeed.y-4, 0)
+		spr(289+(t//(8/gameSpeed))%3, plr.cuttingWeed.x+8, plr.cuttingWeed.y-4, 0)
 	end
 
 	if scissorUses > 0 and (scissorUses > scissorUsesLow or (t//15)%2 > 0) then
 		spr(259, 216, 4, 0, 1, 0, 0, 2, 2)
 	end
+	print(score, 4, 4, 12, false, 2)
 end
 
 -- <TILES>
