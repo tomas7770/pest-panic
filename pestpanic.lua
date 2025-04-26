@@ -225,6 +225,9 @@ function loseLife()
 	lives = lives-1
 	if lives <= 0 then
 		gameState = GAME_OVER
+		if score > pmem(0) then
+			pmem(0, score)
+		end
 	end
 end
 
@@ -415,26 +418,29 @@ function TIC()
 		print("Game over!", 60, 60, 12, false, 2)
 	elseif gameState == TITLE_SCREEN then
 		print("PEST PANIC", 65, 30, 12, false, 2)
+		print("High Score "..pmem(0), 90, 50, 12)
 		rect(91, 66, 60, 14, menuSel == 0 and 2 or 1)
 		rect(86, 86, 75, 14, menuSel == 1 and 2 or 1)
 		print("Play game", 95, 70, 12)
 		print("Instructions", 90, 90, 12)
 		if showInstructions then
-			rect(30, 15, 180, 100, 1)
+			rect(20, 10, 200, 120, 1)
 			print("Bunny's carrots are\n"..
 				  "invaded by weeds!\n\n"..
 				  "Grab shears, walk to\n"..
 				  "the carrots, and hold A\n"..
 				  "to cut!\n\n"..
+				  "Shears break after\n"..
+				  "some uses!\n\n"..
 				  "Don't let weeds grow\n"..
 				  "too much. If a carrot\n"..
 				  "rots, you lose a life!\n\n"..
 				  "The game gets\n"..
 				  "gradually faster.\n\n"..
-				  "Good luck!", 34, 19, 12)
+				  "Good luck!", 25, 15, 12)
 			spr(259, 180, 35, 0, 1, 0, 0, 2, 2)
-			spr(337, 180, 60, 0, 1, 0, 0, 2, 2)
-			spr(weedSprs[1+(t//60)%4], 180, 60, 0, 1, 0, 0, 3, 3)
+			spr(337, 180, 70, 0, 1, 0, 0, 2, 2)
+			spr(weedSprs[1+(t//60)%4], 180, 70, 0, 1, 0, 0, 3, 3)
 		end
 	end
 
