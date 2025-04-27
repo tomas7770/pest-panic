@@ -17,29 +17,29 @@ function BOOT()
 	t = 0
 	speedTable = {
 		-- Map score to gameSpeed and weedSpeed
-		[25] = {1.1, 1.2},
-		[50] = {1.2, 1.35},
-		[75] = {1.3, 1.5},
-		[100] = {1.0, 1.1},
-		[115] = {1.1, 1.25},
-		[135] = {1.2, 1.4},
-		[160] = {1.3, 1.6},
-		[185] = {1.35, 1.6},
-		[200] = {1.1, 1.3},
-		[215] = {1.2, 1.45},
-		[235] = {1.3, 1.6},
-		[260] = {1.4, 1.7},
-		[285] = {1.5, 1.7},
-		[300] = {1.15, 1.4},
-		[310] = {1.2, 1.5},
-		[330] = {1.3, 1.65},
-		[350] = {1.45, 1.75},
+		[25] = {1.1, 1.25},
+		[50] = {1.2, 1.4},
+		[75] = {1.3, 1.6},
+		[100] = {1.0, 1.2},
+		[115] = {1.1, 1.3},
+		[135] = {1.2, 1.45},
+		[160] = {1.3, 1.7},
+		[185] = {1.35, 1.7},
+		[200] = {1.1, 1.4},
+		[215] = {1.2, 1.5},
+		[235] = {1.3, 1.65},
+		[260] = {1.4, 1.75},
+		[285] = {1.5, 1.8},
+		[300] = {1.15, 1.5},
+		[310] = {1.2, 1.6},
+		[330] = {1.3, 1.7},
+		[350] = {1.45, 1.8},
 		[375] = {1.6, 1.8},
-		[400] = {1.2, 1.5},
-		[410] = {1.3, 1.65},
-		[430] = {1.4, 1.75},
-		[450] = {1.55, 1.9},
-		[475] = {1.7, 2.0},
+		[400] = {1.2, 1.6},
+		[410] = {1.3, 1.7},
+		[430] = {1.4, 1.8},
+		[450] = {1.55, 1.8},
+		[475] = {1.7, 1.9},
 	}
 	plrMoveAnim = {
 		x = {
@@ -115,7 +115,7 @@ function initGame()
 		climbDir = 1,
 		climbAnimIndex = 0,
 		cutTimer = 0,
-		cutTimerMax = 0.75,
+		cutTimerMax = 0.5,
 		cuttingWeed = nil,
 		moving = function(self)
 			return self.moveAnimIndex ~= 0
@@ -142,11 +142,11 @@ function initGame()
 	}
 	plr.x, plr.y = addSprOffset(gameTilePos(plr.gx, plr.gy))
 	scissorX, scissorY = addSprOffset(gameTilePos(1, 4))
-	scissorUsesMax = 16
+	scissorUsesMax = 20
 	scissorUsesLow = 4
 	scissorUses = 0
-	weedTimerStatic = 8
-	weedTimerMax = 12
+	weedTimerStatic = 6
+	weedTimerMax = 15
 	weeds = {
 		{
 			gx = 5,
@@ -206,8 +206,8 @@ function addSprOffset(x,y)
 end
 
 function randLimited()
-	-- 0.5 to 1.0
-	return 0.5*math.random()+0.5
+	-- 0.2 to 1.0
+	return 0.8*math.random()+0.2
 end
 
 function lerp(a, b, t)
@@ -309,7 +309,7 @@ function normalGameUpdate()
 		end
 	end
 
-	if plr.gx == 1 and scissorUses <= 0 and not plr:busy() then
+	if plr.gx == 1 and scissorUses <= scissorUsesLow and not plr:busy() then
 		scissorUses = scissorUsesMax
 		sfx(0, "G-4", 20, 0)
 	end
@@ -377,7 +377,7 @@ end
 
 function inGameDraw()
 	map(0,0,30,17,0,0)
-	if scissorUses <= 0 then
+	if scissorUses <= scissorUsesLow then
 		spr(259, scissorX, scissorY, 0, 1, 0, 0, 2, 2)
 	end
 	spr(257, plr.x, plr.y, 0, 1, plr.moveDir == -1 and 1 or 0, 0, 2, 2)
