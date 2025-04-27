@@ -196,6 +196,7 @@ function initGame()
 	failWeed = nil
 	failSoundState = 0
 	music(0)
+	poke(0x13E64+48, 120 - 150)
 end
 
 function gameTilePos(x,y)
@@ -402,9 +403,9 @@ function inGameDraw()
 	if failAnimTimer > 2 and (t//3)%2 > 0 then
 		spr(337, failWeed.x, failWeed.y, 0, 1, 0, 0, 2, 2)
 	elseif failAnimTimer > 1 and failAnimTimer <= 2 then
-		spr(337, failWeed.x, lerp(failWeed.y, 4*24, 2-failAnimTimer), 0, 1, 0, 0, 2, 2)
+		spr(337, failWeed.x, lerp(failWeed.y, 4.5*24, 2-failAnimTimer), 0, 1, 0, 0, 2, 2)
 	elseif failAnimTimer > 0 and failAnimTimer <= 1 then
-		spr(339, failWeed.x, 4*24, 0, 1, 0, 0, 2, 2)
+		spr(339, failWeed.x, 4.5*24, 0, 1, 0, 0, 2, 2)
 	end
 end
 
